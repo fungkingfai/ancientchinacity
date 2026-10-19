@@ -1,0 +1,388 @@
+/**
+ * 城事面板：城市概況／選取建築資訊。
+ */
+
+.info-panel {
+  position: absolute;
+  top: calc(var(--topbar-h) + 12px);
+  right: var(--hud-pad);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: 292px;
+  max-height: calc(100vh - var(--topbar-h) - 28px);
+  pointer-events: auto;
+  color: var(--ink);
+  background: var(--paper-texture);
+  border: 1px solid rgba(66, 53, 36, 0.42);
+  border-top: 3px solid var(--gold);
+  border-radius: 3px;
+  box-shadow: var(--shadow-panel);
+  transition: transform 0.28s ease, opacity 0.28s ease;
+}
+
+.info-panel::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(120, 100, 70, 0.22);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.hud.is-info-collapsed .info-panel {
+  transform: translateX(calc(100% + var(--hud-pad) + 12px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.info-panel .panel-head {
+  margin: 0;
+  padding: 11px 13px 9px;
+}
+
+.info-scroll {
+  flex: 1;
+  min-height: 0;
+  padding: 0 13px 14px;
+  overflow-y: auto;
+}
+
+/* ── 城市概況 ── */
+
+.city-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 10px;
+}
+
+.hero-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hero-label {
+  color: var(--ink-soft);
+  font-size: 9.5px;
+  letter-spacing: 3px;
+  opacity: 0.85;
+}
+
+.hero-city {
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-date {
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.happy-dial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: conic-gradient(var(--dial-c, #b98b3e) calc(var(--p, 70) * 1%), rgba(74, 60, 40, 0.12) 0);
+  box-shadow: inset 0 0 0 1px rgba(60, 44, 26, 0.18), 0 2px 8px rgba(60, 40, 20, 0.12);
+}
+
+.happy-dial::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #faf4e5, #eee3cc);
+  box-shadow: inset 0 1px 3px rgba(60, 40, 20, 0.2);
+}
+
+.dial-face {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.dial-face b {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dial-face span {
+  margin-top: 2px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.happy-dial.tone-good {
+  --dial-c: #5f8a58;
+}
+
+.happy-dial.tone-ok {
+  --dial-c: #b98b3e;
+}
+
+.happy-dial.tone-bad {
+  --dial-c: #a8422f;
+}
+
+/* 統計格 */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255, 252, 244, 0.75), rgba(240, 231, 212, 0.55));
+}
+
+.stat-card.wide {
+  grid-column: span 2;
+}
+
+.stat-card span {
+  color: var(--ink-soft);
+  font-size: 9.5px;
+  letter-spacing: 2px;
+}
+
+.stat-card b {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-card small {
+  color: rgba(70, 58, 42, 0.55);
+  font-size: 9.5px;
+}
+
+/* 城事紀要 */
+
+.log-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 138px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.log-item {
+  display: flex;
+  gap: 7px;
+  padding: 4px 2px;
+  border-bottom: 1px dashed rgba(90, 72, 48, 0.14);
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.log-item:last-child {
+  border-bottom: 0;
+}
+
+.log-date {
+  flex: 0 0 auto;
+  padding-top: 1px;
+  color: var(--ink-soft);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-text {
+  min-width: 0;
+}
+
+.log-item.good .log-text {
+  color: #42653c;
+}
+
+.log-item.warn .log-text {
+  color: #8a6428;
+}
+
+.log-item.bad .log-text {
+  color: var(--red);
+}
+
+/* 建言 */
+
+.tip-card {
+  position: relative;
+  margin-top: 14px;
+  padding: 10px 11px 9px;
+  border: 1px solid rgba(158, 58, 46, 0.24);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255, 247, 235, 0.85), rgba(248, 236, 216, 0.6));
+}
+
+.tip-card::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: -1px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--red), transparent);
+}
+
+.tips-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+
+.tips-head b {
+  color: var(--ink-2);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.tips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tips li {
+  position: relative;
+  padding-left: 11px;
+  color: var(--ink-3);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.tips li::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+/* ── 選取建築 ── */
+
+.info-selected {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 12px;
+}
+
+.sel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sel-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.25), transparent), var(--c, #7a6a4c);
+  color: #fff8ea;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.sel-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sel-title > b {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.sel-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.sel-meta small {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.sel-desc {
+  margin: 7px 0 6px;
+  color: var(--ink-3);
+  font-size: 11.5px;
+  line-height: 1.65;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 3px 0 4px;
+}
+
+.sel-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.sel-actions button {
+  flex: 1;
+}
+
+.sel-foot {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}

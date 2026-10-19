@@ -1,0 +1,36 @@
+{
+  "name": "ancientchinacity",
+  "version": "0.1.0",
+  "description": "《華夏古城》— 中國古代城市建造模擬遊戲 (three.js)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "shot": "node scripts/shot.mjs",
+    "verify": "node scripts/verify-game.mjs",
+    "verify:ui": "node scripts/ui-click-test.mjs"
+  },
+  "keywords": [
+    "three.js",
+    "city-builder",
+    "game",
+    "ancient-china",
+    "simulation"
+  ],
+  "author": "DSH Agent Team",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "playwright": "^1.64.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}

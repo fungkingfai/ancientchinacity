@@ -1,0 +1,116 @@
+/**
+ * 浮動提示（toast）：四種訊息樣式與消退動畫。
+ */
+
+.toast-stack {
+  position: absolute;
+  bottom: 74px;
+  left: 50%;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: min(580px, 92vw);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 100%;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(38, 29, 20, 0.96), rgba(24, 18, 12, 0.96));
+  color: #f3e7cf;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(200, 164, 90, 0.15);
+  color: var(--gold-hi);
+}
+
+.toast-mark .ico {
+  width: 13px;
+  height: 13px;
+}
+
+.toast-body {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+
+.toast-body b {
+  flex: 0 0 auto;
+  color: var(--gold-hi);
+  font-family: var(--font-serif);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.toast-body span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toast-good {
+  border-color: rgba(143, 174, 134, 0.55);
+}
+
+.toast-good .toast-mark {
+  background: rgba(95, 125, 92, 0.25);
+  color: #b9d3a8;
+}
+
+.toast-good .toast-body b {
+  color: #b9d3a8;
+}
+
+.toast-warn {
+  border-color: rgba(200, 164, 90, 0.6);
+}
+
+.toast-bad {
+  border-color: rgba(200, 90, 70, 0.65);
+}
+
+.toast-bad .toast-mark {
+  background: rgba(158, 58, 46, 0.3);
+  color: #f0a18e;
+}
+
+.toast-bad .toast-body b {
+  color: #f0a18e;
+}
+
+.toast-info .toast-mark {
+  background: rgba(92, 127, 150, 0.2);
+  color: #b9cdd8;
+}
+
+.toast-info .toast-body b {
+  color: #b9cdd8;
+}

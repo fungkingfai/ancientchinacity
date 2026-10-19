@@ -1,0 +1,379 @@
+/**
+ * 室內模式：黑漆木牌匾、金色內框資訊卡；隱藏營造與城事面板，保留頂欄。
+ */
+
+.interior-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  pointer-events: none;
+}
+
+.interior-layer.show {
+  display: block;
+}
+
+.interior-plaque {
+  position: absolute;
+  top: calc(var(--topbar-h) + 16px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 7px 24px;
+  border: 1px solid rgba(200, 164, 90, 0.4);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(32, 24, 17, 0.88), rgba(24, 18, 12, 0.84));
+  color: var(--gold-hi);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  animation: plaque-in 0.35s ease;
+}
+
+.interior-plaque::before,
+.interior-plaque::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 164, 90, 0.5));
+}
+
+.interior-plaque::before {
+  right: 100%;
+}
+
+.interior-plaque::after {
+  left: 100%;
+  background: linear-gradient(90deg, rgba(200, 164, 90, 0.5), transparent);
+}
+
+.interior-plaque span {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  letter-spacing: 6px;
+  text-indent: 6px;
+}
+
+.interior-plaque small {
+  color: rgba(240, 228, 204, 0.5);
+  font-size: 9.5px;
+  letter-spacing: 2px;
+}
+
+@keyframes plaque-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.interior-card {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(960px, calc(100vw - 32px));
+  max-height: 42vh;
+  pointer-events: auto;
+  color: #f2e7d0;
+  background: radial-gradient(120% 100% at 20% 0%, rgba(58, 43, 29, 0.98), rgba(28, 21, 14, 0.98));
+  border: 1px solid rgba(200, 164, 90, 0.4);
+  border-top: 2px solid var(--gold);
+  border-radius: 4px;
+  box-shadow: var(--shadow-deep);
+  transform: translateX(-50%);
+  animation: interior-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.interior-card::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(200, 164, 90, 0.22);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+@keyframes interior-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.interior-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid rgba(200, 164, 90, 0.22);
+}
+
+.interior-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.interior-seal {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 2px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), transparent), var(--c, #7a6a4c);
+  color: #fff8ea;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.interior-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.interior-title-text > b {
+  color: var(--gold-hi);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  letter-spacing: 3px;
+}
+
+.interior-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.interior-meta-line small {
+  color: rgba(240, 228, 204, 0.5);
+  font-size: 10.5px;
+}
+
+.interior-meta-line .badge {
+  background: rgba(200, 164, 90, 0.16);
+  color: var(--gold-hi);
+  font-size: 9.5px;
+  line-height: 15px;
+}
+
+.interior-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 7px;
+}
+
+.interior-actions .primary {
+  min-height: 32px;
+  padding: 0 14px;
+  font-size: 12.5px;
+}
+
+.interior-actions kbd {
+  border-color: rgba(200, 164, 90, 0.3);
+  background: rgba(255, 248, 230, 0.1);
+  color: var(--gold-hi);
+  box-shadow: none;
+}
+
+.interior-body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 14px;
+  min-height: 0;
+  padding: 12px 18px;
+  overflow-y: auto;
+}
+
+.interior-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.interior-desc {
+  margin: 0 0 4px;
+  color: rgba(240, 228, 204, 0.72);
+  font-size: 11.5px;
+  line-height: 1.65;
+}
+
+.interior-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: 14px;
+  border-left: 1px solid rgba(200, 164, 90, 0.14);
+}
+
+.interior-people-col .people {
+  margin-bottom: 4px;
+}
+
+.interior-card .section-label {
+  margin: 8px 0 5px;
+  color: var(--gold-hi);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.interior-card .section-label::before {
+  background: var(--gold);
+}
+
+.interior-card .section-label::after {
+  background: linear-gradient(90deg, rgba(200, 164, 90, 0.4), transparent);
+}
+
+.interior-card .res-chip {
+  border-color: rgba(200, 164, 90, 0.25);
+  background: rgba(255, 248, 230, 0.08);
+  color: #f2e7d0;
+  box-shadow: none;
+}
+
+.interior-card .res-chip b {
+  color: #f8efd8;
+}
+
+.interior-card .res-chip em {
+  color: rgba(240, 228, 204, 0.5);
+}
+
+.interior-card .person {
+  border-color: rgba(200, 164, 90, 0.22);
+  background: rgba(255, 248, 230, 0.07);
+  color: #efe3ca;
+}
+
+.interior-card .person small {
+  color: rgba(240, 228, 204, 0.45);
+}
+
+.interior-card .muted {
+  color: rgba(240, 228, 204, 0.4);
+}
+
+.interior-card .pill {
+  border-color: rgba(200, 164, 90, 0.25);
+  background: rgba(255, 248, 230, 0.06);
+  color: #e9dcc2;
+}
+
+.interior-card .pill.ok {
+  border-color: rgba(143, 174, 134, 0.45);
+  background: rgba(95, 125, 92, 0.18);
+  color: #b9d3a8;
+}
+
+.interior-card .pill.warn {
+  border-color: rgba(220, 140, 110, 0.4);
+  background: rgba(158, 58, 46, 0.18);
+  color: #e8a58f;
+}
+
+.interior-card .finance-line {
+  color: rgba(240, 228, 204, 0.55);
+}
+
+.interior-card .finance-line b {
+  color: #f2e7d0;
+}
+
+.interior-card .note-row span {
+  color: rgba(240, 228, 204, 0.45);
+}
+
+.interior-card .note-row b {
+  color: #ece0c8;
+}
+
+.interior-card .prog-row {
+  color: rgba(240, 228, 204, 0.5);
+}
+
+.interior-card .prog-bar {
+  background: rgba(255, 248, 230, 0.1);
+}
+
+.interior-foot {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 18px 12px;
+  border-top: 1px solid rgba(200, 164, 90, 0.18);
+}
+
+.interior-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(240, 228, 204, 0.4);
+  font-size: 10.5px;
+}
+
+.interior-card .danger-outline {
+  min-height: 30px;
+  border-color: rgba(220, 120, 100, 0.4);
+  background: rgba(158, 58, 46, 0.12);
+  color: #e8a08b;
+}
+
+.interior-card .danger-outline:hover {
+  background: rgba(158, 58, 46, 0.24);
+}
+
+.interior-card .confirm-inline {
+  flex: 0 0 auto;
+  border-color: rgba(220, 120, 100, 0.4);
+  background: rgba(158, 58, 46, 0.14);
+  color: #f0d9c8;
+}
+
+.interior-card .confirm-inline button {
+  border-color: rgba(200, 164, 90, 0.3);
+  background: rgba(255, 248, 230, 0.08);
+  color: #f2e7d0;
+}
+
+.interior-card .confirm-inline button.danger {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fbefd9;
+}
+
+/* 室內模式隱藏營造／城事面板與把手，保留頂欄 */
+.hud.is-interior .build-panel,
+.hud.is-interior .info-panel,
+.hud.is-interior .panel-handle {
+  display: none !important;
+}
+
+.hud.is-interior .toast-stack {
+  bottom: calc(42vh + 30px);
+}

@@ -1,0 +1,521 @@
+/**
+ * 頂欄：黑漆木底、雙金線、朱印城名、時辰天氣、國庫／人口／民心、倍速與功能鈕。
+ */
+
+.topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 22;
+  height: var(--topbar-h);
+  pointer-events: auto;
+  color: #f1e6d0;
+  background:
+    radial-gradient(120% 180% at 50% -40%, rgba(120, 84, 48, 0.4), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, rgba(34, 25, 18, 0.97), rgba(40, 30, 21, 0.93) 55%, rgba(23, 17, 12, 0.97));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(200, 164, 90, 0.5) 14%,
+    rgba(232, 205, 141, 0.85) 50%,
+    rgba(200, 164, 90, 0.5) 86%,
+    transparent
+  );
+}
+
+.topbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(200, 164, 90, 0.75) 12%,
+    rgba(232, 205, 141, 0.95) 50%,
+    rgba(200, 164, 90, 0.75) 88%,
+    transparent
+  );
+}
+
+.topbar.is-paused::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(158, 58, 46, 0.6) 15%,
+    rgba(214, 110, 88, 0.85) 50%,
+    rgba(158, 58, 46, 0.6) 85%,
+    transparent
+  );
+}
+
+.topbar-trim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 5px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+      90deg,
+      rgba(200, 164, 90, 0.35) 0 1px,
+      transparent 1px 9px
+    )
+    center / 100% 1px no-repeat;
+  opacity: 0.55;
+}
+
+.topbar-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.1vw, 18px);
+  height: 100%;
+  padding: 0 16px;
+}
+
+/* ── 城名 ── */
+
+.tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.brand-seal {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(246, 232, 205, 0.32);
+  border-radius: 3px;
+  background: linear-gradient(155deg, #b6473a, #7c2a21);
+  color: #f8ead2;
+  font-family: var(--font-serif);
+  line-height: 1;
+  transform: rotate(-1deg);
+  box-shadow: 0 0 0 2px rgba(200, 164, 90, 0.26), 0 4px 12px rgba(0, 0, 0, 0.42),
+    inset 0 0 14px rgba(0, 0, 0, 0.28);
+}
+
+.brand-seal i {
+  font-style: normal;
+  font-size: 14px;
+  letter-spacing: 1px;
+  line-height: 1.12;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.city-name {
+  max-width: 190px;
+  overflow: hidden;
+  color: var(--gold-hi);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 10px rgba(200, 164, 90, 0.28);
+}
+
+.brand-tag {
+  color: rgba(240, 228, 204, 0.42);
+  font-size: 9.5px;
+  letter-spacing: 3px;
+  white-space: nowrap;
+}
+
+/* ── 日期／時辰／天氣 ── */
+
+.tb-clock {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: clamp(10px, 1.2vw, 18px);
+  border-left: 1px solid rgba(200, 164, 90, 0.22);
+}
+
+.tb-date {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #f1e6d0;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+
+.season-chip {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 50%;
+  background: rgba(200, 164, 90, 0.1);
+  color: var(--gold-hi);
+  font-size: 11px;
+}
+
+.tb-date[data-season='spring'] .season-chip {
+  border-color: rgba(143, 191, 111, 0.5);
+  background: rgba(143, 191, 111, 0.14);
+  color: #b5d69b;
+}
+
+.tb-date[data-season='summer'] .season-chip {
+  border-color: rgba(216, 167, 67, 0.55);
+  background: rgba(216, 167, 67, 0.14);
+  color: #f0c978;
+}
+
+.tb-date[data-season='autumn'] .season-chip {
+  border-color: rgba(201, 122, 74, 0.55);
+  background: rgba(201, 122, 74, 0.14);
+  color: #e8a67e;
+}
+
+.tb-date[data-season='winter'] .season-chip {
+  border-color: rgba(159, 182, 201, 0.5);
+  background: rgba(159, 182, 201, 0.14);
+  color: #c8dced;
+}
+
+.tb-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: rgba(240, 228, 204, 0.6);
+}
+
+.chip-time,
+.chip-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid rgba(200, 164, 90, 0.2);
+  border-radius: 2px;
+  background: rgba(255, 248, 230, 0.045);
+  white-space: nowrap;
+}
+
+.chip-time .ico,
+.chip-weather .ico {
+  width: 12px;
+  height: 12px;
+  color: rgba(232, 205, 141, 0.75);
+}
+
+.chip-time b {
+  color: #efe2c8;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip-time em {
+  color: rgba(240, 228, 204, 0.45);
+  font-style: normal;
+  font-size: 10px;
+}
+
+.wx-ico {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+}
+
+.wx-ico .ico {
+  width: 13px;
+  height: 13px;
+}
+
+.wx-clear .wx-ico {
+  color: #f0c063;
+}
+
+.wx-cloudy .wx-ico {
+  color: #a9b3bd;
+}
+
+.wx-rain .wx-ico {
+  color: #82a9c9;
+}
+
+.wx-snow .wx-ico {
+  color: #dbe8f3;
+}
+
+.chip-weather b {
+  color: #efe2c8;
+  font-weight: 600;
+}
+
+.chip-weather em {
+  color: rgba(240, 228, 204, 0.5);
+  font-style: normal;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 國庫／人口／民心 ── */
+
+.tb-stats {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stat-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid rgba(200, 164, 90, 0.22);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(255, 248, 230, 0.075), rgba(255, 248, 230, 0.025));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+.pill-ico {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(200, 164, 90, 0.13);
+  color: var(--gold-hi);
+}
+
+.pill-ico .ico {
+  width: 14px;
+  height: 14px;
+}
+
+.pill-body {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.12;
+  min-width: 0;
+}
+
+.pill-label {
+  color: rgba(240, 228, 204, 0.45);
+  font-size: 9.5px;
+  letter-spacing: 2px;
+}
+
+.pill-value {
+  color: #f6ecd8;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-pill.treasury .pill-value {
+  color: var(--gold-hi);
+}
+
+.stat-pill.negative {
+  border-color: rgba(200, 80, 60, 0.5);
+  background: linear-gradient(180deg, rgba(158, 58, 46, 0.22), rgba(158, 58, 46, 0.06));
+}
+
+.stat-pill.negative .pill-value {
+  color: #f08a76;
+  text-shadow: 0 0 14px rgba(240, 90, 70, 0.35);
+}
+
+.happy-meter {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.happy-meter i {
+  display: block;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(90deg, #b98b3e, #e8cd8d);
+  transition: width 0.4s ease;
+}
+
+.stat-pill.happiness .pill-value {
+  color: #e8cd8d;
+}
+
+.stat-pill.happiness.good .pill-value {
+  color: #b9d3a8;
+}
+
+.stat-pill.happiness.good .happy-meter i {
+  background: linear-gradient(90deg, #4f7a4a, #a4c98f);
+}
+
+.stat-pill.happiness.bad .pill-value {
+  color: #f0a18e;
+}
+
+.stat-pill.happiness.bad .happy-meter i {
+  background: linear-gradient(90deg, #8f2f26, #d0664f);
+}
+
+/* ── 倍速 ── */
+
+.tb-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.speed-group {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid rgba(200, 164, 90, 0.28);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.speed-group button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 26px;
+  border-radius: 2px;
+  color: rgba(232, 220, 196, 0.66);
+  transition: background 0.15s, color 0.15s;
+}
+
+.speed-group button .ico {
+  width: 12px;
+  height: 12px;
+}
+
+.speed-group button:hover {
+  background: rgba(255, 248, 230, 0.1);
+  color: #f6ecd8;
+}
+
+.speed-group button.active {
+  background: linear-gradient(180deg, #b6473a, #8d2f26);
+  color: #fbefd9;
+  box-shadow: inset 0 0 0 1px rgba(232, 205, 141, 0.25), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.pause-flag {
+  display: none;
+  padding: 3px 7px;
+  border: 1px solid rgba(200, 80, 60, 0.4);
+  border-radius: 2px;
+  background: rgba(158, 58, 46, 0.12);
+  color: #e9a08b;
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+
+.pause-flag.show {
+  display: inline-block;
+}
+
+/* ── 功能鈕 ── */
+
+.tb-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(200, 164, 90, 0.3);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255, 248, 230, 0.09), rgba(255, 248, 230, 0.02));
+  color: #eadec4;
+  font-family: var(--font-serif);
+  font-size: 12.5px;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  transition: transform 0.16s, background 0.16s, border-color 0.16s;
+}
+
+.top-btn .ico {
+  width: 13px;
+  height: 13px;
+  color: rgba(232, 205, 141, 0.82);
+}
+
+.top-btn:hover {
+  border-color: rgba(232, 205, 141, 0.65);
+  background: linear-gradient(180deg, rgba(200, 164, 90, 0.22), rgba(200, 164, 90, 0.08));
+  color: #fbf1da;
+  transform: translateY(-1px);
+}
+
+.top-btn:active {
+  transform: translateY(0);
+}
+
+.top-btn.ghost {
+  opacity: 0.82;
+}
+
+.top-btn.ghost:hover {
+  opacity: 1;
+}
+
+.topbar kbd {
+  border-color: rgba(200, 164, 90, 0.35);
+  background: rgba(255, 248, 230, 0.1);
+  color: var(--gold-hi);
+  box-shadow: none;
+}
