@@ -65,6 +65,25 @@ npm run verify:ui  # 真實滑鼠／鍵盤 UI 互動驗收
 
 > 需要支援 WebGL 的瀏覽器（Chrome／Edge／Firefox／Safari 均可）。
 
+## Cloudflare Workers 部署
+
+專案已包含 `wrangler.jsonc`（Workers 靜態資產模式，無需 Worker 程式碼）：
+
+```bash
+npm run build
+npm run deploy      # = npm run build && wrangler deploy
+```
+
+Cloudflare Workers Builds 設定：
+- Build command：`npm run build`
+- Deploy command：`npx wrangler deploy`
+- 設定檔：`wrangler.jsonc`（`assets.directory = ./dist`、SPA fallback）
+- 不需要 `@cloudflare/vite-plugin`；`vite.config.ts` 保持一般 Vite 設定即可。
+
+> 若 Cloudflare 專案連線的是自動匯入的鏡像 repo（例如 `ancientchinacity`），
+> 請確認 Build 設定中的 Git repository 指向本 repo（`fungkingfai/ancientcity`），
+> 或把本 commit 同步到該 repo，否則 Cloudflare 不會收到最新修正。
+
 ## 專案結構
 
 ```
