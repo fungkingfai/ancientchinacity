@@ -4,6 +4,7 @@
 > 鋪路、墾田、招商、課稅，看百姓在四季晴雨中作息；每一棟建築都可以走進去。
 
 🌐 **進入遊戲**
+- **線上（Cloudflare Workers）**：<https://ancientchinacity.fungkingfai.workers.dev/>
 - 本機：`http://127.0.0.1:4173`（生產建置）或 `http://127.0.0.1:5173`（開發伺服器）
 - 同一個 Wi-Fi／區網的其他裝置：`http://192.168.68.67:4173`（生產）或 `http://192.168.68.67:5173`（開發）
   - 伺服器已綁定 `0.0.0.0`；若 IP 變了可用 `hostname -I` 查目前位址後替換主機名稱。
@@ -75,14 +76,16 @@ npm run deploy      # = npm run build && wrangler deploy
 ```
 
 Cloudflare Workers Builds 設定：
+- Git repository：`fungkingfai/ancientchinacity`（**main 為 production branch**）
 - Build command：`npm run build`
 - Deploy command：`npx wrangler deploy`
 - 設定檔：`wrangler.jsonc`（`assets.directory = ./dist`、SPA fallback）
 - 不需要 `@cloudflare/vite-plugin`；`vite.config.ts` 保持一般 Vite 設定即可。
 
-> 若 Cloudflare 專案連線的是自動匯入的鏡像 repo（例如 `ancientchinacity`），
-> 請確認 Build 設定中的 Git repository 指向本 repo（`fungkingfai/ancientcity`），
-> 或把本 commit 同步到該 repo，否則 Cloudflare 不會收到最新修正。
+**部署流程**：commit 並 push 到 `main` → Cloudflare 自動 `npm install` → `npm run build` → `npx wrangler deploy`。
+或在本機以 `npm run deploy`（需先 `npx wrangler login` 或設定 `CLOUDFLARE_API_TOKEN`）直接部署。
+
+預覽部署（Preview branches）可在 Cloudflare Worker → Settings → Builds 開啟。
 
 ## 專案結構
 
