@@ -13,7 +13,8 @@
     "shot": "node scripts/shot.mjs",
     "verify": "node scripts/verify-game.mjs",
     "verify:ui": "node scripts/ui-click-test.mjs",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "verify:mobile": "node scripts/mobile-test.mjs"
   },
   "keywords": [
     "three.js",

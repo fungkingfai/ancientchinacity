@@ -1,0 +1,667 @@
+/**
+ * 手機版 UI（僅套用於 .hud.is-mobile-ui）
+ *
+ * 設計：
+ *  - 精簡頂欄：城名印章、季節、天氣、國庫、人口、倍速
+ *  - 底部導覽：營造／城事／財政／存檔／說明／指引
+ *  - 營造與城事以「底部面板（bottom sheet）」呈現，選擇工具後自動收起
+ *  - 手機安全區（瀏海／Home Indicator）與直橫向支援
+ *
+ * 電腦版 UI 完全不受此檔影響。
+ */
+
+/* ─────────────── 全域手機行為 ─────────────── */
+
+html.ui-mobile,
+html.ui-mobile body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.ui-mobile #game-root canvas {
+  cursor: default;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html.ui-mobile #ui-root button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─────────────── 變數與頂欄 ─────────────── */
+
+.hud.is-mobile-ui {
+  --mobile-nav-h: 58px;
+  --mobile-safe-b: env(safe-area-inset-bottom, 0px);
+  --topbar-h: calc(52px + env(safe-area-inset-top, 0px));
+  --hud-pad: 8px;
+}
+
+.hud.is-mobile-ui .topbar {
+  padding-top: 0;
+}
+
+.hud.is-mobile-ui .topbar-inner {
+  gap: 5px;
+  padding: 0 7px;
+}
+
+.hud.is-mobile-ui .tb-brand {
+  flex: 0 0 auto;
+}
+
+.hud.is-mobile-ui .brand-seal {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+}
+
+.hud.is-mobile-ui .brand-seal i {
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.hud.is-mobile-ui .brand-text {
+  display: none;
+}
+
+.hud.is-mobile-ui .tb-clock {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border-left: 0;
+}
+
+/* 舊的 @media (max-width: 720px) 會隱藏 tb-clock，手機模式要覆蓋回來 */
+.hud.is-mobile-ui .tb-date,
+.hud.is-mobile-ui .tb-time {
+  display: flex;
+  align-items: center;
+}
+
+.hud.is-mobile-ui .tb-date {
+  font-size: 10.5px;
+  letter-spacing: 0;
+}
+
+.hud.is-mobile-ui .tb-date [data-k='dateText'] {
+  display: none;
+}
+
+.hud.is-mobile-ui .season-chip {
+  min-width: 26px;
+  height: 22px;
+  padding: 0 5px;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.hud.is-mobile-ui .tb-time {
+  gap: 4px;
+}
+
+.hud.is-mobile-ui .chip-time {
+  display: none;
+}
+
+.hud.is-mobile-ui .chip-weather {
+  height: 24px;
+  padding: 0 6px;
+  gap: 3px;
+  font-size: 10.5px;
+}
+
+.hud.is-mobile-ui .chip-weather .ico,
+.hud.is-mobile-ui .chip-weather .wx-ico svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hud.is-mobile-ui .tb-stats {
+  gap: 4px;
+  margin-left: auto;
+}
+
+.hud.is-mobile-ui .stat-pill {
+  height: 30px;
+  padding: 0 6px;
+  gap: 4px;
+}
+
+.hud.is-mobile-ui .stat-pill.happiness {
+  display: none;
+}
+
+.hud.is-mobile-ui .pill-label {
+  display: none;
+}
+
+.hud.is-mobile-ui .pill-ico {
+  width: 17px;
+  height: 17px;
+}
+
+.hud.is-mobile-ui .pill-ico .ico {
+  width: 15px;
+  height: 15px;
+}
+
+.hud.is-mobile-ui .pill-value {
+  font-size: 12px;
+}
+
+.hud.is-mobile-ui .tb-controls {
+  margin-left: 2px;
+}
+
+.hud.is-mobile-ui .speed-group {
+  padding: 2px;
+  gap: 0;
+}
+
+.hud.is-mobile-ui .speed-group button {
+  width: 24px;
+  height: 26px;
+}
+
+.hud.is-mobile-ui .speed-group button .ico {
+  width: 13px;
+  height: 13px;
+}
+
+.hud.is-mobile-ui .tb-actions {
+  display: none;
+}
+
+.hud.is-mobile-ui .pause-flag {
+  display: none;
+}
+
+/* ─────────────── 底部導覽列 ─────────────── */
+
+.hud.is-mobile-ui .mobile-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 23;
+  display: flex;
+  align-items: stretch;
+  height: calc(var(--mobile-nav-h) + var(--mobile-safe-b));
+  padding: 0 2px var(--mobile-safe-b);
+  background:
+    radial-gradient(120% 140% at 50% -20%, rgba(120, 84, 48, 0.32), transparent 60%),
+    linear-gradient(180deg, rgba(40, 30, 21, 0.98), rgba(23, 17, 12, 0.99));
+  border-top: 1px solid var(--gold-dim);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.hud.is-mobile-ui .mobile-nav-btn {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #c9b78e;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.hud.is-mobile-ui .mobile-nav-btn .ico {
+  width: 21px;
+  height: 21px;
+}
+
+.hud.is-mobile-ui .mobile-nav-btn.is-active {
+  color: var(--gold-hi);
+}
+
+.hud.is-mobile-ui .mobile-nav-btn.is-active::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gold-hi);
+  box-shadow: 0 0 8px rgba(232, 205, 141, 0.5);
+}
+
+.hud.is-mobile-ui .mobile-nav-btn:active {
+  background: rgba(200, 164, 90, 0.12);
+}
+
+/* ─────────────── Sheet 遮罩 ─────────────── */
+
+.hud.is-mobile-ui .mobile-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 24;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(12, 8, 5, 0.5);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  pointer-events: auto;
+}
+
+.hud.is-mobile-ui .mobile-sheet-backdrop[hidden] {
+  display: none;
+}
+
+/* ─────────────── 營造 / 城事：底部面板 ─────────────── */
+
+.hud.is-mobile-ui .panel-handle {
+  display: none !important;
+}
+
+.hud.is-mobile-ui .build-panel,
+.hud.is-mobile-ui .info-panel {
+  position: fixed;
+  top: auto;
+  left: 8px;
+  right: 8px;
+  bottom: calc(var(--mobile-nav-h) + var(--mobile-safe-b) + 8px);
+  width: auto;
+  max-height: min(62dvh, 560px);
+  margin: 0;
+  z-index: 26;
+  border-radius: 14px 14px 10px 10px;
+  box-shadow: 0 -12px 44px rgba(0, 0, 0, 0.6);
+  transform: translateY(calc(100% + var(--mobile-nav-h) + 60px));
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+}
+
+.hud.is-mobile-ui .info-panel {
+  max-height: min(68dvh, 620px);
+}
+
+.hud.is-mobile-ui.is-build-open .build-panel,
+.hud.is-mobile-ui.is-info-open .info-panel {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* 手機不需要「面板收合」小把手 */
+.hud.is-mobile-ui .collapse-btn {
+  display: none !important;
+}
+
+.hud.is-mobile-ui .panel-head {
+  padding: 8px 12px;
+  flex: 0 0 auto;
+}
+
+.hud.is-mobile-ui .panel-title {
+  font-size: 16px;
+  letter-spacing: 3px;
+}
+
+.hud.is-mobile-ui .mobile-sheet-close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(255, 252, 244, 0.65);
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.hud.is-mobile-ui .mobile-sheet-close .ico {
+  width: 14px;
+  height: 14px;
+}
+
+.hud.is-mobile-ui .mobile-sheet-close:active {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* ── 營造面板內容 ── */
+
+.hud.is-mobile-ui .build-panel {
+  gap: 7px;
+  padding: 10px 10px 8px;
+}
+
+.hud.is-mobile-ui .category-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.hud.is-mobile-ui .category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.hud.is-mobile-ui .category-tabs button {
+  flex: 0 0 auto;
+  min-width: 54px;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.hud.is-mobile-ui .build-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hud.is-mobile-ui .build-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+.hud.is-mobile-ui .build-card {
+  min-height: 56px;
+  padding: 7px 8px;
+  gap: 7px;
+}
+
+.hud.is-mobile-ui .build-card .b-icon {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+}
+
+.hud.is-mobile-ui .build-card .b-main b {
+  font-size: 13px;
+}
+
+.hud.is-mobile-ui .build-card .b-main small {
+  font-size: 10px;
+}
+
+.hud.is-mobile-ui .build-card .b-cost,
+.hud.is-mobile-ui .build-card .b-lock {
+  font-size: 10px;
+  gap: 2px;
+}
+
+.hud.is-mobile-ui .build-card .b-side .ico {
+  width: 11px;
+  height: 11px;
+}
+
+.hud.is-mobile-ui .build-tools {
+  flex: 0 0 auto;
+  padding-top: 6px;
+}
+
+.hud.is-mobile-ui .tool-row {
+  display: flex;
+  gap: 6px;
+}
+
+.hud.is-mobile-ui .tool-card {
+  flex: 1;
+  min-height: 44px;
+  padding: 7px 9px;
+}
+
+.hud.is-mobile-ui .tools-hint {
+  display: none;
+}
+
+.hud.is-mobile-ui .cancel-tool {
+  display: none !important;
+}
+
+.hud.is-mobile-ui .build-tooltip {
+  display: none !important;
+}
+
+/* ── 城事面板內容 ── */
+
+.hud.is-mobile-ui .info-panel .panel-head {
+  padding: 8px 12px 6px;
+}
+
+.hud.is-mobile-ui .info-scroll {
+  padding: 0 12px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hud.is-mobile-ui .city-hero {
+  padding: 8px 0 6px;
+}
+
+.hud.is-mobile-ui .happy-dial {
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+}
+
+.hud.is-mobile-ui .stat-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.hud.is-mobile-ui .stat-card {
+  padding: 7px 9px;
+}
+
+.hud.is-mobile-ui .stat-card b {
+  font-size: 16px;
+}
+
+.hud.is-mobile-ui .log-feed {
+  max-height: 132px;
+}
+
+/* ─────────────── 模式提示 / Toast ─────────────── */
+
+.hud.is-mobile-ui .mode-hint {
+  bottom: calc(var(--mobile-nav-h) + var(--mobile-safe-b) + 10px);
+  z-index: 25;
+  max-width: calc(100vw - 16px);
+  padding: 7px 9px 7px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  white-space: normal;
+  text-align: left;
+}
+
+.hud.is-mobile-ui .mode-hint.show {
+  transform: translate(-50%, 0);
+}
+
+.hud.is-mobile-ui .mode-hint-cancel {
+  width: 30px;
+  height: 30px;
+  margin-left: 2px;
+}
+
+.hud.is-mobile-ui.is-sheet-open .mode-hint {
+  display: none;
+}
+
+.hud.is-mobile-ui .toast-stack {
+  bottom: calc(var(--mobile-nav-h) + var(--mobile-safe-b) + 18px);
+  width: calc(100vw - 20px);
+  z-index: 60;
+}
+
+.hud.is-mobile-ui .toast {
+  width: auto;
+  max-width: 100%;
+  padding: 8px 12px;
+  font-size: 12.5px;
+}
+
+/* ─────────────── 室內模式 ─────────────── */
+
+.hud.is-mobile-ui.is-interior .mobile-nav {
+  display: none;
+}
+
+.hud.is-mobile-ui .interior-plaque {
+  top: calc(var(--topbar-h) + 10px);
+  padding: 5px 16px;
+}
+
+.hud.is-mobile-ui .interior-plaque span {
+  font-size: 14px;
+  letter-spacing: 4px;
+}
+
+.hud.is-mobile-ui .interior-card {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  width: calc(100vw - 16px);
+  /* 保留上半部 3D 室內畫面，資訊卡可滾動 */
+  max-height: min(48dvh, 430px);
+  border-radius: 12px 12px 8px 8px;
+}
+
+.hud.is-mobile-ui .interior-head {
+  padding: 8px 12px 6px;
+}
+
+.hud.is-mobile-ui .interior-body {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 9px 12px;
+}
+
+.hud.is-mobile-ui .interior-main {
+  grid-column: auto;
+}
+
+.hud.is-mobile-ui .interior-col {
+  padding-top: 8px;
+  padding-left: 0;
+  border-top: 1px solid rgba(200, 164, 90, 0.14);
+  border-left: 0;
+}
+
+.hud.is-mobile-ui .interior-note {
+  display: none;
+}
+
+.hud.is-mobile-ui.is-interior .toast-stack {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+/* ─────────────── Modal（財政／存檔／說明／教學） ─────────────── */
+
+.hud.is-mobile-ui .modal {
+  width: calc(100vw - 12px);
+  max-height: calc(100dvh - 12px);
+  border-radius: 10px;
+}
+
+.hud.is-mobile-ui .modal-head {
+  padding: 11px 13px 9px;
+}
+
+.hud.is-mobile-ui .modal-body {
+  padding: 12px 13px 18px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hud.is-mobile-ui .modal-footer {
+  padding: 10px 13px calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+.hud.is-mobile-ui .tutorial-steps,
+.hud.is-mobile-ui .fin-grid {
+  grid-template-columns: 1fr;
+}
+
+.hud.is-mobile-ui .interior-body {
+  grid-template-columns: 1fr;
+}
+
+/* ─────────────── 橫向手機 ─────────────── */
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .hud.is-mobile-ui {
+    --mobile-nav-h: 46px;
+  }
+
+  .hud.is-mobile-ui .interior-card {
+    max-height: min(58dvh, 360px);
+  }
+
+  .hud.is-mobile-ui .tb-date {
+    display: none;
+  }
+
+  .hud.is-mobile-ui .build-panel,
+  .hud.is-mobile-ui .info-panel {
+    max-height: 74dvh;
+  }
+
+  .hud.is-mobile-ui .interior-card {
+    max-height: 74dvh;
+  }
+
+  .hud.is-mobile-ui .mobile-nav-btn span {
+    font-size: 9px;
+  }
+
+  .hud.is-mobile-ui .mobile-nav-btn .ico {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ─────────────── 極窄手機 ─────────────── */
+
+@media (max-width: 380px) {
+  .hud.is-mobile-ui .speed-group button {
+    width: 22px;
+  }
+
+  .hud.is-mobile-ui .brand-seal {
+    width: 26px;
+    height: 26px;
+  }
+
+  .hud.is-mobile-ui .mobile-nav-btn {
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+
+  .hud.is-mobile-ui .build-card {
+    min-height: 52px;
+  }
+
+  .hud.is-mobile-ui .build-card .b-main small {
+    display: none;
+  }
+}

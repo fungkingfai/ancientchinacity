@@ -7,6 +7,7 @@
 
 import * as THREE from 'three';
 import { BUILDINGS } from '../core/config';
+import { isMobileUi } from '../core/device';
 import type { GameActions, GameState } from '../core/types';
 import type { GameStore as Store } from '../core/store';
 import { buildingAnchor, TILE, tileWorld, worldToTileIndex } from './coords';
@@ -64,6 +65,18 @@ export class CityView {
   private dragDistance = 0;
   private lastPaintTile = -1;
 
+  // ── 手機觸控手勢（僅手機 UI 使用；電腦路徑完全不受影響） ──
+  private touchUi = false;
+  private touchPointers = new Map<number, { x: number; y: number }>();
+  private touchStart = { x: 0, y: 0, t: 0 };
+  private touchDragLast = new THREE.Vector2();
+  private touchMoved = false;
+  private touchHadPinch = false;
+  private pinch: { distance: number; angle: number; centerX: number; centerY: number } | null = null;
+  private lastTouchAt = 0;
+  private lastTapAt = 0;
+  private lastTapPos = new THREE.Vector2();
+
   private keys = new Set<string>();
   private resizeObserver: ResizeObserver;
   private lastTime = performance.now();
@@ -86,6 +99,14 @@ export class CityView {
     this.canvas = this.renderer.domElement;
 
     this.cityCamera = new THREE.PerspectiveCamera(46, 1, 0.1, 600);
+    this.touchUi = isMobileUi();
+    if (this.touchUi) {
+      // 手機：鏡頭稍遠、俯視角稍高，方便看到整個村落
+      this.distance = 64;
+      this.pitch = 0.9;
+      // 手機 GPU 效能有限：限制渲染解析度
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    }
     this.rebuild(this.store.state);
     this.resize();
 
@@ -116,6 +137,16 @@ export class CityView {
     this.buildings = createBuildingsView(state);
     this.citizens = createCitizensView(state);
     this.cityScene.add(this.terrain.group, this.roads.group, this.buildings.group, this.citizens.group);
+
+    // 手機：降低陰影貼圖解析度，節省 GPU（視覺差異在手機上不明顯）
+    if (this.touchUi) {
+      this.cityScene.traverse((obj) => {
+        const light = obj as THREE.DirectionalLight;
+        if (light.isDirectionalLight && light.castShadow) {
+          light.shadow.mapSize.set(1024, 1024);
+        }
+      });
+    }
 
     // 懸停格高亮
     const hoverGeo = new THREE.PlaneGeometry(TILE * 0.96, TILE * 0.96);
@@ -222,9 +253,10 @@ export class CityView {
   // ───────────────────────── 事件綁定 ─────────────────────────
 
   private bindEvents(): void {
-    this.canvas.addEventListener('pointerdown', this.onPointerDown);
-    this.canvas.addEventListener('pointermove', this.onPointerMove);
-    this.canvas.addEventListener('pointerup', this.onPointerUp);
+    this.canvas.addEventListener('pointerdown', this.onPointerDown, { passive: false });
+    this.canvas.addEventListener('pointermove', this.onPointerMove, { passive: false });
+    this.canvas.addEventListener('pointerup', this.onPointerUp, { passive: false });
+    this.canvas.addEventListener('pointercancel', this.onPointerCancel);
     this.canvas.addEventListener('pointerleave', this.onPointerLeave);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -248,6 +280,12 @@ export class CityView {
   private unsubs: (() => void)[] = [];
 
   private onPointerDown = (e: PointerEvent): void => {
+    if (this.touchUi && e.pointerType === 'touch') {
+      this.onTouchStart(e);
+      return;
+    }
+    // 觸控後瀏覽器補發的相容滑鼠事件忽略，避免重複點擊
+    if (this.touchUi && e.pointerType === 'mouse' && performance.now() - this.lastTouchAt < 700) return;
     this.canvas.setPointerCapture(e.pointerId);
     this.dragging = true;
     this.dragButton = e.button;
@@ -261,6 +299,11 @@ export class CityView {
   };
 
   private onPointerMove = (e: PointerEvent): void => {
+    if (this.touchUi && e.pointerType === 'touch') {
+      this.onTouchMove(e);
+      return;
+    }
+    if (this.touchUi && e.pointerType === 'mouse' && performance.now() - this.lastTouchAt < 700) return;
     this.updatePointer(e.clientX, e.clientY);
     this.updateHover();
     if (!this.dragging) return;
@@ -286,6 +329,11 @@ export class CityView {
   };
 
   private onPointerUp = (e: PointerEvent): void => {
+    if (this.touchUi && e.pointerType === 'touch') {
+      this.onTouchEnd(e);
+      return;
+    }
+    if (this.touchUi && e.pointerType === 'mouse' && performance.now() - this.lastTouchAt < 700) return;
     const wasDragging = this.dragging;
     this.dragging = false;
     this.dragButton = -1;
@@ -301,9 +349,150 @@ export class CityView {
   };
 
   private onPointerLeave = (): void => {
+    if (this.touchUi) return;
     this.hover = -1;
     this.hoverMesh.visible = false;
   };
+
+  // ───────────────────────── 手機觸控手勢 ─────────────────────────
+
+  private onTouchStart(e: PointerEvent): void {
+    e.preventDefault();
+    this.lastTouchAt = performance.now();
+    try {
+      this.canvas.setPointerCapture(e.pointerId);
+    } catch {
+      /* 部分瀏覽器在多指情況下不支援 capture */
+    }
+    this.touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    this.updatePointer(e.clientX, e.clientY);
+    this.updateHover();
+
+    if (this.touchPointers.size === 1) {
+      this.touchStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+      this.touchDragLast.set(e.clientX, e.clientY);
+      this.touchMoved = false;
+      this.touchHadPinch = false;
+      this.pinch = null;
+      this.dragDistance = 0;
+    } else if (this.touchPointers.size === 2) {
+      this.touchHadPinch = true;
+      this.touchMoved = true;
+      this.pinch = this.computePinch();
+    }
+  }
+
+  private onTouchMove(e: PointerEvent): void {
+    if (!this.touchPointers.has(e.pointerId)) return;
+    e.preventDefault();
+    this.lastTouchAt = performance.now();
+    this.touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const points = [...this.touchPointers.values()];
+
+    if (points.length >= 2) {
+      const next = this.computePinch();
+      const prev = this.pinch;
+      if (!prev) {
+        this.pinch = next;
+        return;
+      }
+      // 雙指縮放（捏合）
+      const ratio = prev.distance / Math.max(1, next.distance);
+      this.distance = THREE.MathUtils.clamp(this.distance * ratio, MIN_DISTANCE, MAX_DISTANCE);
+      // 雙指旋轉
+      const deltaAngle = Math.atan2(Math.sin(next.angle - prev.angle), Math.cos(next.angle - prev.angle));
+      this.yaw -= deltaAngle;
+      // 雙指中心拖曳 → 平移
+      this.pan(next.centerX - prev.centerX, next.centerY - prev.centerY);
+      this.pinch = next;
+      return;
+    }
+
+    if (points.length === 1) {
+      const dx = e.clientX - this.touchDragLast.x;
+      const dy = e.clientY - this.touchDragLast.y;
+      this.touchDragLast.set(e.clientX, e.clientY);
+      this.dragDistance += Math.abs(dx) + Math.abs(dy);
+      if (this.dragDistance > 8) this.touchMoved = true;
+      this.pan(dx, dy);
+      this.updatePointer(e.clientX, e.clientY);
+      this.updateHover();
+    }
+  }
+
+  private onTouchEnd(e: PointerEvent): void {
+    if (!this.touchPointers.has(e.pointerId)) return;
+    e.preventDefault();
+    this.lastTouchAt = performance.now();
+    this.touchPointers.delete(e.pointerId);
+
+    if (this.touchPointers.size === 0) {
+      const duration = performance.now() - this.touchStart.t;
+      const travel = Math.hypot(e.clientX - this.touchStart.x, e.clientY - this.touchStart.y);
+      const tapped = !this.touchHadPinch && !this.touchMoved && duration < 650 && travel < 12;
+      if (tapped) this.handleTouchTap(e.clientX, e.clientY);
+      this.pinch = null;
+      this.touchMoved = false;
+      this.touchHadPinch = false;
+      this.dragDistance = 0;
+    } else if (this.touchPointers.size === 1) {
+      // 雙指結束後剩下一指：重新當作單指拖曳起點
+      const only = [...this.touchPointers.values()][0];
+      this.touchDragLast.set(only.x, only.y);
+      this.touchStart = { x: only.x, y: only.y, t: performance.now() };
+      this.touchMoved = true;
+      this.touchHadPinch = true;
+      this.pinch = null;
+    }
+  }
+
+  private onPointerCancel = (e: PointerEvent): void => {
+    if (!this.touchUi) return;
+    this.touchPointers.delete(e.pointerId);
+    if (this.touchPointers.size === 0) {
+      this.pinch = null;
+      this.touchMoved = false;
+      this.touchHadPinch = false;
+    }
+  };
+
+  private computePinch(): { distance: number; angle: number; centerX: number; centerY: number } {
+    const pts = [...this.touchPointers.values()];
+    const a = pts[0];
+    const b = pts[1];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    return {
+      distance: Math.hypot(dx, dy),
+      angle: Math.atan2(dy, dx),
+      centerX: (a.x + b.x) / 2,
+      centerY: (a.y + b.y) / 2,
+    };
+  }
+
+  /** 手機點擊：單擊建造／選取；雙擊進入建築 */
+  private handleTouchTap(x: number, y: number): void {
+    const now = performance.now();
+    const isDouble =
+      now - this.lastTapAt < 360 && Math.hypot(x - this.lastTapPos.x, y - this.lastTapPos.y) < 36;
+    this.lastTapAt = isDouble ? 0 : now;
+    this.lastTapPos.set(x, y);
+
+    const state = this.store.state;
+    if (isDouble && !state.ui.tool && state.ui.mode === 'city') {
+      const tile = this.pickTile(x, y);
+      if (tile >= 0) {
+        const buildingId = state.tiles[tile].buildingId;
+        if (buildingId >= 0) {
+          this.actions.enterBuilding(buildingId);
+          return;
+        }
+      }
+      return;
+    }
+
+    this.clickAt(x, y);
+  }
 
   private onWheel = (e: WheelEvent): void => {
     e.preventDefault();
@@ -311,6 +500,7 @@ export class CityView {
   };
 
   private onDoubleClick = (e: MouseEvent): void => {
+    if (this.touchUi) return; // 手機以自訂雙擊手勢處理
     const tile = this.pickTile(e.clientX, e.clientY);
     if (tile < 0) return;
     const state = this.store.state;
@@ -465,6 +655,7 @@ export class CityView {
     this.canvas.removeEventListener('pointerdown', this.onPointerDown);
     this.canvas.removeEventListener('pointermove', this.onPointerMove);
     this.canvas.removeEventListener('pointerup', this.onPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.onPointerCancel);
     this.canvas.removeEventListener('pointerleave', this.onPointerLeave);
     this.canvas.removeEventListener('wheel', this.onWheel);
     this.canvas.removeEventListener('dblclick', this.onDoubleClick);

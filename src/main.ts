@@ -4,6 +4,7 @@
 
 import './styles.css';
 import { BUILDINGS, FESTIVAL_COOLDOWN_DAYS, FESTIVAL_COST } from './core/config';
+import { applyUiMode, isMobileUi } from './core/device';
 import { createGameState } from './core/new-game';
 import { GameStore } from './core/store';
 import * as saves from './core/save';
@@ -263,6 +264,7 @@ function createActions(store: GameStore): GameActions {
 }
 
 function boot(): void {
+  const uiMode = applyUiMode();
   const gameRoot = document.getElementById('game-root');
   const uiRoot = document.getElementById('ui-root');
   if (!gameRoot || !uiRoot) throw new Error('找不到遊戲容器');
@@ -324,7 +326,12 @@ function boot(): void {
 
   // 除錯用
   (window as unknown as Record<string, unknown>).__HUAXIA__ = { store, actions, view, ui, simulation, ctx };
-  console.info('《華夏古城》已啟動 — 按 H 查看操作說明');
+  if (uiMode === 'mobile') {
+    setTimeout(() => {
+      store.toast('手機操作：單指拖曳平移 · 雙指縮放／旋轉 · 點擊建造 · 雙擊進入建築', 'info');
+    }, 2200);
+  }
+  console.info(`《華夏古城》已啟動（${isMobileUi() ? '手機' : '電腦'}介面）— 按 H 查看操作說明`);
 }
 
 try {

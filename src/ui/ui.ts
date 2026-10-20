@@ -17,8 +17,10 @@ import './css/modals.css';
 import './css/interior.css';
 import './css/toasts.css';
 import './css/responsive.css';
+import './css/mobile.css';
 
 import { BUILDINGS } from '../core/config';
+import { getUiMode } from '../core/device';
 import type { GameActions, GameState } from '../core/types';
 import type { GameStore } from '../core/store';
 import { delegate, qs, setClass, setHidden } from './dom';
@@ -29,6 +31,7 @@ import { createInfoPanel } from './info-panel';
 import { createInteriorPanel } from './interior-panel';
 import { createModals } from './modals';
 import { createToasts } from './toasts';
+import { createMobileBar } from './mobile-bar';
 
 export interface GameUI {
   update(state: GameState): void;
@@ -54,20 +57,23 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
   `;
 
   const hud = qs<HTMLElement>(root, '#hud')!;
+  const mobileUi = getUiMode() === 'mobile';
+  hud.classList.add(mobileUi ? 'is-mobile-ui' : 'is-desktop-ui');
   const topbar = createTopbar(hud, store, actions);
   const buildPanel = createBuildPanel(hud, store, actions);
   const infoPanel = createInfoPanel(hud, store, actions);
   const interiorPanel = createInteriorPanel(hud, store, actions);
   const modals = createModals(hud, store, actions);
   const toasts = createToasts(hud, store);
+  const mobileBar = mobileUi ? createMobileBar(hud, store, actions) : null;
 
   const modeHint = qs<HTMLElement>(hud, '[data-k="modeHint"]')!;
   const hintText = qs<HTMLElement>(hud, '[data-k="hintText"]')!;
   const hintIcon = qs<HTMLElement>(hud, '[data-k="hintIcon"]')!;
   const hintCancel = qs<HTMLElement>(hud, '.mode-hint-cancel')!;
 
-  // ── 面板收合（寬螢幕）／抽屜（窄螢幕） ──
-  const isNarrow = (): boolean => window.innerWidth <= 980;
+  // ── 面板收合（寬螢幕）／抽屜（窄螢幕）／手機底部面板 ──
+  const isNarrow = (): boolean => mobileUi || window.innerWidth <= 980;
   const setPanelOpen = (panel: 'build' | 'info', open: boolean): void => {
     if (isNarrow()) hud.classList.toggle(`is-${panel}-open`, open);
     else hud.classList.toggle(`is-${panel}-collapsed`, !open);
@@ -87,6 +93,7 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
   });
 
   const onResize = (): void => {
+    if (mobileUi) return;
     if (!isNarrow()) hud.classList.remove('is-build-open', 'is-info-open');
   };
   window.addEventListener('resize', onResize);
@@ -104,7 +111,9 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
       const building = ui.interiorId != null ? state.buildings.find((b) => b.id === ui.interiorId) : undefined;
       const name = building ? BUILDINGS[building.key]?.name ?? '' : '';
       hintIcon.innerHTML = ico('door');
-      hintText.textContent = `${name} · 室內 — 雙擊戶外或按 Esc 返回城市`;
+      hintText.textContent = mobileUi
+        ? `${name} · 室內 — 點「返回城市」離開`
+        : `${name} · 室內 — 雙擊戶外或按 Esc 返回城市`;
       setClass(modeHint, 'show', true);
       setClass(modeHint, 'interior', true);
       setHidden(hintCancel, true);
@@ -118,10 +127,14 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
     }
     if (tool === 'road') {
       hintIcon.innerHTML = ico('road');
-      hintText.textContent = '鋪設道路：按住左鍵拖曳連續鋪設 · 右鍵取消';
+      hintText.textContent = mobileUi
+        ? '鋪設道路：點擊地圖逐格鋪設 · 單指拖曳平移視角'
+        : '鋪設道路：按住左鍵拖曳連續鋪設 · 右鍵取消';
     } else if (tool === 'demolish') {
       hintIcon.innerHTML = ico('hammer');
-      hintText.textContent = '拆除模式：點擊要拆去的建築或道路 · 右鍵取消';
+      hintText.textContent = mobileUi
+        ? '拆除模式：點擊要拆去的建築或道路'
+        : '拆除模式：點擊要拆去的建築或道路 · 右鍵取消';
     } else {
       const def = BUILDINGS[tool];
       if (!def) {
@@ -129,7 +142,9 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
         return;
       }
       hintIcon.innerHTML = ico('seal');
-      hintText.textContent = `放置「${def.name}」：${def.size[0]}×${def.size[1]} 格 · 左鍵放置 · 右鍵取消`;
+      hintText.textContent = mobileUi
+        ? `放置「${def.name}」：點擊地圖放置 · 雙指縮放旋轉`
+        : `放置「${def.name}」：${def.size[0]}×${def.size[1]} 格 · 左鍵放置 · 右鍵取消`;
     }
     setClass(modeHint, 'show', true);
     setHidden(hintCancel, false);
@@ -142,6 +157,7 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
     infoPanel.update(state);
     interiorPanel.update(state);
     modals.update(state);
+    mobileBar?.update(state);
     updateHint(state);
   };
 
@@ -158,6 +174,7 @@ export function createUI(root: HTMLElement, store: GameStore, actions: GameActio
       interiorPanel.destroy();
       modals.destroy();
       toasts.destroy();
+      mobileBar?.destroy();
       root.innerHTML = '';
     },
   };
